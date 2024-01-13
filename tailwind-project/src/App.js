@@ -1,10 +1,12 @@
-import logo from './logo.svg';
-import SideBar from './components/sidebar';
+import SideBar from './components/SideBar';
+import NavBar from './components/NavBar';
 import './App.css';
 
 function App() {
   return (
+    
     <div className='flex'>
+      <NavBar />
       <SideBar />
     </div>
   );
