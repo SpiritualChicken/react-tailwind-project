@@ -20,6 +20,9 @@ module.exports = {
           100: '#f2f3f5',
         },
       },
+      spacing: {
+        88: '22rem',
+      },
     },
   },
   plugins: [],
