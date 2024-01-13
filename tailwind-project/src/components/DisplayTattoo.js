@@ -6,7 +6,8 @@ import { IoIosAddCircleOutline } from "react-icons/io";
 
 function DisplayTattoo({ UserName, likes, saves }) {
     return (
-        <div className="bg-white rounded-md shadow-md p-4 m-2 w-full sm:w-1/2 md:w-1/3 lg:w-1/4 xl:w-1/5"> 
+      <div className='content-list '>
+        <div className="bg-white rounded-md shadow-md p-4 m-2 "> 
             <div className="displayTattooImgContainer"> 
                 <img src={defaultTattoo} alt={`${UserName}'s Tattoo`} className='w-full h-auto rounded-md'/>
             </div>
@@ -16,6 +17,7 @@ function DisplayTattoo({ UserName, likes, saves }) {
                 <Interaction icon={ <IoIosAddCircleOutline /> } displayNumber={saves} /> 
             </div>
         </div>
+      </div>
     );
 }
 

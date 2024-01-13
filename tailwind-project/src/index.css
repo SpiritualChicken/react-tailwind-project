@@ -56,5 +56,18 @@
     mr-auto ml-2 my-auto 
     transition duration-300 ease-in-out;
   }
+  .content-container {
+    @apply flex-row bg-gray-300 dark:bg-gray-700 h-full w-full overflow-hidden;
+  }
+
+ .content-list {
+    @apply flex-row
+    h-full w-full 
+    mt-0 ml-16 mr-16 pb-12 
+  
+  }
+  .grid {
+    @apply w-full;
+  }
 
 }
