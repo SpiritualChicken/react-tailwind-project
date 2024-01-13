@@ -9,20 +9,22 @@ const SideBar = () => {
                     
         <SideBarIcon icon={<FaSkull />} />
         <Divider />
-        <SideBarIcon icon={<IoIosCreate size="32" />} />
-        <SideBarIcon icon={<BsFillLightningFill size="20" />} />
+        <SideBarIcon icon={<IoIosCreate size="32" />} text={'tooltip 💡'} />
+        <SideBarIcon icon={<BsFillLightningFill size="20" />} text={'tooltip 💡'} />
         <Divider />
         <SideBarIcon icon={<BsGearFill size="22" />} />
     </div>
   );
 };
 
-const SideBarIcon = ({ icon, text = 'tooltip 💡' }) => (
+const SideBarIcon = ({ icon, text }) => (
   <div className="sidebar-icon group">
     {icon}
-    <span class="sidebar-tooltip group-hover:scale-100">
-      {text}
-    </span>
+    {text && (
+      <span className="sidebar-tooltip group-hover:scale-100">
+        {text}
+      </span>
+    )}
   </div>
 );
 
