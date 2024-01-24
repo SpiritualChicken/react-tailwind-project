@@ -1,5 +1,5 @@
+import React from 'react';
 import {
-    FaSearch,
     FaHashtag,
     FaRegBell,
     FaUserCircle,
