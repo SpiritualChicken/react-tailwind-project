@@ -1,6 +1,6 @@
 import defaultTattoo from '../assets/tattooPlaceholder.png';
-import { CiHeart } from "react-icons/ci";
-import { IoIosAddCircleOutline } from "react-icons/io";
+import { FaHeart } from "react-icons/fa";
+import { FaBookmark } from "react-icons/fa";
 import { FaUserCircle, } from 'react-icons/fa';
 import { FaRegComments } from "react-icons/fa";
 import { FaShare } from "react-icons/fa";
@@ -23,16 +23,16 @@ function DisplayTattoo({ UserName, likes, saves }) {
               <p className='text-sm'>#tag</p>
             </div>
           </div> */}
-            <div className="block border-2 rounded-md h-full w-full"> 
+            <div className="block border-2 rounded-t-md h-full w-full"> 
                 <img src={defaultTattoo} alt={`${UserName}'s Tattoo`} className='w-full h-auto rounded-md'/>
             </div>
             <div className='flex justify-center pt-2 pb-1'>
-                <Interaction icon={ <CiHeart />} displayNumber={likes}/>
-                <Interaction icon={ <IoIosAddCircleOutline /> } displayNumber={saves} /> 
+                <Interaction icon={ <FaHeart />} displayNumber={likes}/>
+                <Interaction icon={ <FaBookmark /> } displayNumber={saves} /> 
                 {/* Comment button */}
                 {/* <Interaction icon={ <FaRegComments /> } displayNumber={saves} /> */}
-                {/* Share Button */}
-                {/* <Interaction icon={ <FaShare />} displayNumber={saves} /> */}
+      
+                <Interaction icon={ <FaShare />} displayNumber={saves} />
             </div>
         </div>
       </div>

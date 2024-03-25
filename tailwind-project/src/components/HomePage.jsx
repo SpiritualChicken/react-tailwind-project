@@ -1,6 +1,7 @@
 import SideBar from './SideBar';
 import TopNavigation from './TopNavigation';
 import DisplayTattoo from './DisplayTattoo';
+import React, { useState, useEffect } from 'react';
 
 
 const tattoosData = [
@@ -20,6 +21,19 @@ const tattoosData = [
 
 
 function HomePage() {
+  const [displayCount, setDisplayCount] = useState(10); // Number of items to display initially
+  const [loadMoreVisible, setLoadMoreVisible] = useState(true); // Flag to control the visibility of the "Load More" button
+
+  const handleLoadMore = () => {
+    // Increase the number of items to display
+    setDisplayCount(displayCount + 10);
+
+    // Optionally, you can decide when to hide the "Load More" button
+    if (displayCount + 10 >= tattoosData.length) {
+      setLoadMoreVisible(false);
+    }
+  };
+  
   return (
     
     <div className='flex'>
@@ -31,6 +45,13 @@ function HomePage() {
             <DisplayTattoo key={index} {...tattoo} />
           ))}
         </div>
+        {loadMoreVisible && (
+          <div className="text-center mt-4">
+            <button className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded" onClick={handleLoadMore}>
+              Load More
+            </button>
+          </div>
+        )}
       </div>
     </div>
   );
