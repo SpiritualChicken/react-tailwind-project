@@ -1,7 +1,7 @@
 import SideBar from './SideBar';
 import TopNavigation from './TopNavigation';
 import DisplayTattoo from './DisplayTattoo';
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 
 
 const tattoosData = [
@@ -15,6 +15,10 @@ const tattoosData = [
   { UserName: 'Luke', likes: 30, saves: 8 },
   { UserName: 'Will', likes: 45, saves: 4 },
   { UserName: 'Lola', likes: 1000, saves: 100 },
+  { UserName: 'Rafferty', likes: 1200, saves: 500 },
+
+
+
   
   // Add more tattoo data as needed
 ];
@@ -23,35 +27,53 @@ const tattoosData = [
 function HomePage() {
   const [displayCount, setDisplayCount] = useState(10); // Number of items to display initially
   const [loadMoreVisible, setLoadMoreVisible] = useState(true); // Flag to control the visibility of the "Load More" button
+  const [tattoos, setTattoos] = useState(tattoosData); // State to hold tattoo data
+  const loadMoreTriggerRef = useRef(null); // Reference to the load more trigger element
 
-  const handleLoadMore = () => {
-    // Increase the number of items to display
-    setDisplayCount(displayCount + 10);
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting && loadMoreVisible) {
+          // Regenerate tattoo data when the bottom of the page is reached
+          setTattoos([...tattoos, ...tattoosData]);
+          setDisplayCount(displayCount + 10);
+        }
+      },
+      { threshold: 0.5 }
+    );
 
-    // Optionally, you can decide when to hide the "Load More" button
-    if (displayCount + 10 >= tattoosData.length) {
-      setLoadMoreVisible(false);
+    if (loadMoreTriggerRef.current) {
+      observer.observe(loadMoreTriggerRef.current);
     }
-  };
-  
+
+    return () => {
+      if (loadMoreTriggerRef.current) {
+        observer.unobserve(loadMoreTriggerRef.current);
+      }
+    };
+  }, [loadMoreVisible, displayCount, tattoos]);
+
+  useEffect(() => {
+    if (displayCount >= tattoos.length) {
+      setLoadMoreVisible(false);
+    } else {
+      setLoadMoreVisible(true);
+    }
+  }, [displayCount, tattoos]);
+
   return (
-    
     <div className='flex'>
       <SideBar />
-      <div className='content-container' >
-      <TopNavigation />
-        <div className='grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 p-4 pr-20 '>
-          {tattoosData.map((tattoo, index) => (
+      <div className='content-container'>
+        <TopNavigation />
+        <div className='grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 p-4 pr-20'>
+          {/* Use slice to display only the first `displayCount` items */}
+          {tattoos.slice(0, displayCount).map((tattoo, index) => (
             <DisplayTattoo key={index} {...tattoo} />
           ))}
         </div>
-        {loadMoreVisible && (
-          <div className="text-center mt-4">
-            <button className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded" onClick={handleLoadMore}>
-              Load More
-            </button>
-          </div>
-        )}
+        {/* Use a <div> element as the loadMoreTrigger */}
+        <div id="loadMoreTrigger" ref={loadMoreTriggerRef} className="h-8"></div>
       </div>
     </div>
   );
