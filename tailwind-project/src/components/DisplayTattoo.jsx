@@ -29,9 +29,6 @@ function DisplayTattoo({ UserName, likes, saves }) {
             <div className='flex justify-center pt-2 pb-1'>
                 <Interaction icon={ <FaHeart />} displayNumber={likes}/>
                 <Interaction icon={ <FaBookmark /> } displayNumber={saves} /> 
-                {/* Comment button */}
-                {/* <Interaction icon={ <FaRegComments /> } displayNumber={saves} /> */}
-      
                 <Interaction icon={ <FaShare />} displayNumber={saves} />
             </div>
         </div>

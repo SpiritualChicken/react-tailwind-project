@@ -79,3 +79,10 @@
   }
 
 }
+
+#my-canvas {
+  @apply w-full
+  h-full
+  p-2
+
+}
