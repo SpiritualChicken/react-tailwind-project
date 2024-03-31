@@ -14,8 +14,9 @@ function Library ()  {
                     className="px-2 py-1 border border-solid border-grey-300 rounded-md"
                 />
             </div>
+            {/* Need to create a tattoo design template */}
             <div className="grid sm:grid-cols-1 md:grid-cols-1 lg:grid-cols-2 gap-2 px-2 pt-2">
-                {[...Array(10)].map((_, index) => ( // Loop to create 10 images
+                {[...Array(20)].map((_, index) => ( 
                     <img key={index} className="rounder-md" src={placeHolderImg} width="full" loading="lazy" alt={`Image ${index + 1}`} />
                 ))}
             </div>
