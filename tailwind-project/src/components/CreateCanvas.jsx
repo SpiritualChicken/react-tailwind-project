@@ -83,6 +83,7 @@ function CreateCanvas() {
 
         return humanoid;
     }
+    
 
     // Render Babylon.js scene when component mounts
     useEffect(() => {
