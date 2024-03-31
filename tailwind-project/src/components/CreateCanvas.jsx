@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import * as BABYLON from '@babylonjs/core';
+import TopNavigation from './TopNavigation';
 
 function CreateCanvas() {
     const [tattooTexture, setTattooTexture] = useState(null);
@@ -25,7 +26,7 @@ function CreateCanvas() {
         const canvas = document.getElementById('renderCanvas');
         const engine = new BABYLON.Engine(canvas, true);
         const scene = new BABYLON.Scene(engine);
-        const camera = new BABYLON.ArcRotateCamera("Camera", Math.PI / 2, Math.PI / 2, 2, BABYLON.Vector3.Zero(), scene);
+        const camera = new BABYLON.ArcRotateCamera("Camera", Math.PI / 2, Math.PI / 2, 7, BABYLON.Vector3.Zero(), scene);
         camera.attachControl(canvas, true);
         const light = new BABYLON.HemisphericLight("light", new BABYLON.Vector3(0, 1, 0), scene);
         const humanoid = createHumanoidModel(scene); // Function to create humanoid model
@@ -96,11 +97,21 @@ function CreateCanvas() {
     }, [imageLoaded, tattooTexture]);
 
     return (
-        <div>
-            <input type="file" onChange={handleFileUpload} />
-            <canvas id="renderCanvas" style={{ width: '100%', height: '100%' }}></canvas>
+        <div className="flex h-screen">
+        <div className="flex flex-col flex-1">
+            <TopNavigation />
+            <div className="grid grid-cols-1 xl-grid-cols-3 md:grid-cols-3 gap-4 p-4 pl-20 h-full">
+                <div className="text-center border border-solid border-black rounded-md md:block md:col-span-1 h-full flex flex-col">
+                    <h1>Upload</h1>
+                    <input type="file" className='pt-2' onChange={handleFileUpload} />
+                </div>
+                <div className="md:col-span-2 flex flex-col">
+                    <canvas id="renderCanvas" className='rounded-md' style={{ width: '100%', height: '100%' }}></canvas>
+                </div>
+            </div>
         </div>
-    );
+    </div>
+);
 }
 
 export default CreateCanvas;
