@@ -1,23 +1,30 @@
 import React, { useState, useEffect } from 'react';
 import * as BABYLON from '@babylonjs/core';
 import TopNavigation from './TopNavigation';
+import PreviewImages from './PreviewImages';
 
 function CreateCanvas() {
-    const [tattooTexture, setTattooTexture] = useState(null);
+    const [tattooTextures, setTattooTextures] = useState([]);
     const [imageLoaded, setImageLoaded] = useState(false);
+    const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
+    
 
     // Function to handle file upload
     function handleFileUpload(event) {
-        const file = event.target.files[0];
-        if (file) {
-            const reader = new FileReader();
-            reader.onload = function (e) {
-                const imageDataUrl = e.target.result;
-                setTattooTexture(imageDataUrl); // Set the uploaded image as tattoo texture
-                setImageLoaded(true);
-            };
-            reader.readAsDataURL(file);
+        const files = event.target.files;
+        if (files && files.length > 0) {
+            const newTextures = Array.from(files).map(file => {
+                return URL.createObjectURL(file);
+            });
+            setTattooTextures([...tattooTextures, ...newTextures]);
+            setImageLoaded(true);
         }
+    }
+
+    function handleDelete(index) {
+        const updatedTextures = [...tattooTextures];
+        updatedTextures.splice(index, 1);
+        setTattooTextures(updatedTextures);
     }
 
     // Function to create 3D scene
@@ -37,17 +44,38 @@ function CreateCanvas() {
             engine.resize();
         });
 
-        // Apply tattoo texture to the model if loaded
-        if (imageLoaded && tattooTexture) {
-            applyTattooToModel(scene, humanoid, tattooTexture);
+        // Apply tattoo textures to the model if loaded
+        if (imageLoaded && tattooTextures.length > 0) {
+            applyTattoosToModel(scene, humanoid, tattooTextures);
         }
+
+        // Add event listeners for mouse movements
+        canvas.addEventListener('mousemove', handleMouseMove);
     }
 
-    // Function to apply the tattoo texture to the 3D model
-    function applyTattooToModel(scene, mesh, texture) {
-        const material = new BABYLON.StandardMaterial("tattooMaterial", scene);
-        material.diffuseTexture = new BABYLON.Texture(texture, scene);
-        mesh.material = material;
+    // Function to handle mouse move events
+    function handleMouseMove(event) {
+        const canvas = document.getElementById('renderCanvas');
+        const rect = canvas.getBoundingClientRect();
+        const x = event.clientX - rect.left;
+        const y = event.clientY - rect.top;
+        setMousePosition({ x, y });
+    }
+
+    // Function to apply the tattoo textures to the 3D model
+    function applyTattoosToModel(scene, mesh, textures) {
+        mesh.material = new BABYLON.MultiMaterial("multiMat", scene);
+        textures.forEach((texture, index) => {
+            const material = new BABYLON.StandardMaterial("tattooMaterial" + index, scene);
+            material.diffuseTexture = new BABYLON.Texture(texture, scene);
+            mesh.material.subMaterials.push(material);
+        });
+
+        // Update texture position based on mouse position
+        mesh.material.subMaterials.forEach(material => {
+            material.diffuseTexture.uOffset = mousePosition.x / scene.getEngine().getRenderWidth();
+            material.diffuseTexture.vOffset = mousePosition.y / scene.getEngine().getRenderHeight();
+        });
     }
 
     // Function to create 3D humanoid model
@@ -65,8 +93,9 @@ function CreateCanvas() {
         leftArm.position.y = 0.5;
         leftArm.rotation.z = Math.PI / 4;
 
-        const rightArm = leftArm.clone("rightArm");
+        const rightArm = BABYLON.MeshBuilder.CreateCylinder("rightArm", { diameterTop: 0.2, diameterBottom: 0.2, height: 1 }, scene);
         rightArm.position.x = 0.7;
+        rightArm.position.y = 0.5;
         rightArm.rotation.z = -Math.PI / 4;
 
         // Create legs
@@ -74,7 +103,7 @@ function CreateCanvas() {
         leftLeg.position.x = -0.3;
         leftLeg.position.y = -1;
 
-        const rightLeg = leftLeg.clone("rightLeg");
+        const rightLeg = BABYLON.MeshBuilder.CreateCylinder("rightLeg", { diameterTop: 0.3, diameterBottom: 0.3, height: 1 }, scene);
         rightLeg.position.x = 0.3;
         rightLeg.position.y = -1;
 
@@ -88,31 +117,43 @@ function CreateCanvas() {
     // Render Babylon.js scene when component mounts
     useEffect(() => {
         renderScene();
+
+        return () => {
+            // Cleanup event listeners when component unmounts
+            const canvas = document.getElementById('renderCanvas');
+            canvas.removeEventListener('mousemove', handleMouseMove);
+        };
     }, []);
 
-    // Render Babylon.js scene when imageLoaded or tattooTexture changes
+    // Render Babylon.js scene when imageLoaded or tattooTextures changes
     useEffect(() => {
         if (imageLoaded) {
             renderScene();
         }
-    }, [imageLoaded, tattooTexture]);
+    }, [imageLoaded, tattooTextures]);
 
     return (
-        <div className="flex h-screen">
-        <div className="flex flex-col flex-1">
-            <TopNavigation />
-            <div className="grid grid-cols-1 xl-grid-cols-3 md:grid-cols-3 gap-4 p-4 pl-20 h-full">
-                <div className="text-center border border-solid border-black rounded-md md:block md:col-span-1 h-full flex flex-col">
+<div className="flex h-screen">
+    <div className="flex flex-col flex-1">
+        <TopNavigation />
+        <div className="grid grid-cols-1 xl-grid-cols-3 md:grid-cols-3 gap-4 p-4 pl-20 h-full">
+            <div className="md:block md:col-span-1 h-full flex flex-col">
+                <div className='canvas-side-elements mb-4'>
                     <h1>Upload</h1>
-                    <input type="file" className='pt-2' onChange={handleFileUpload} />
+                    <input type="file" className='pt-2' onChange={handleFileUpload} multiple />
                 </div>
-                <div className="md:col-span-2 flex flex-col">
-                    <canvas id="renderCanvas" className='rounded-md' style={{ width: '100%', height: '100%' }}></canvas>
+                <div className='canvas-side-elements'>
+                    <h1>Layers</h1>
+                    <PreviewImages images={tattooTextures} onDelete={handleDelete} />
                 </div>
+            </div>
+            <div className="md:col-span-2 flex flex-col">
+                <canvas id="renderCanvas" className='rounded-md' style={{ width: '100%', height: '100%' }}></canvas>
             </div>
         </div>
     </div>
-);
+</div>
+    );
 }
 
 export default CreateCanvas;

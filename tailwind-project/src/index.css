@@ -86,3 +86,14 @@
   p-2
 
 }
+
+.canvas-side-elements {
+  height: 49%;
+  @apply 
+  text-center 
+  rounded-md 
+  border 
+  border-solid 
+  border-black  
+
+}
