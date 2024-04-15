@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import * as BABYLON from '@babylonjs/core';
 import TopNavigation from './TopNavigation';
+import '@babylonjs/loaders';
 import PreviewImages from './PreviewImages';
 
 function CreateCanvas() {
@@ -29,19 +30,26 @@ function CreateCanvas() {
     useEffect(() => {
         if (!canvasRef.current) return;
 
+        // Initialize the engine and scene if they haven't been already
         if (!engineRef.current) {
             engineRef.current = new BABYLON.Engine(canvasRef.current, true);
         }
-
         if (!sceneRef.current) {
             sceneRef.current = new BABYLON.Scene(engineRef.current);
             const camera = new BABYLON.ArcRotateCamera("Camera", 1, Math.PI / 2, 7, BABYLON.Vector3.Zero(), sceneRef.current);
             camera.attachControl(canvasRef.current, true);
             new BABYLON.HemisphericLight("light", new BABYLON.Vector3(0, 1, 0), sceneRef.current);
         }
-
-        const humanoid = createHumanoidModel(sceneRef.current);
-        applyTattoosToModel(humanoid, tattooTextures);
+    
+        // Load the model and apply tattoos
+        (async () => {
+            try {
+                const humanoid = await createHumanoidModel(sceneRef.current);
+                applyTattoosToModel(humanoid, tattooTextures);
+            } catch (error) {
+                console.error("Error loading humanoid model:", error);
+            }
+        })();
 
         engineRef.current.runRenderLoop(() => {
             if (sceneRef.current) {
@@ -130,9 +138,27 @@ function CreateCanvas() {
     }
 
     function createHumanoidModel(scene) {
-        const body = BABYLON.MeshBuilder.CreateBox("body", { height: 3, width: 2, depth: 1 }, scene);
-        body.position.y = 1;
-        return body;
+        // Define the model path
+        const modelPath = '././public/assets/LeftArm.glb';
+    
+        // Return a new promise
+        return new Promise((resolve, reject) => {
+            // Use SceneLoader to import the mesh
+            BABYLON.SceneLoader.ImportMesh("", modelPath, "", scene, (newMeshes) => {
+                // Assuming the first mesh is the humanoid model you're interested in
+                const humanoid = newMeshes[0];
+                if (humanoid) {
+                    // Adjust position or any other properties as needed
+                    humanoid.position.y = 1;
+    
+                    // Resolve the promise with the loaded humanoid mesh
+                    resolve(humanoid);
+                } else {
+                    // If no meshes were loaded, reject the promise
+                    reject(new Error("Failed to load the humanoid model"));
+                }
+            });
+        });
     }
 
     return (
