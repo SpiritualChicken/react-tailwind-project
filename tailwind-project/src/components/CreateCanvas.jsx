@@ -1,8 +1,9 @@
 import React, { useState, useEffect, useRef } from 'react';
 import * as BABYLON from '@babylonjs/core';
 import TopNavigation from './TopNavigation';
-import '@babylonjs/loaders';
+import '@babylonjs/loaders/glTF';
 import PreviewImages from './PreviewImages';
+
 
 function CreateCanvas() {
     const [tattooTextures, setTattooTextures] = useState([]);
@@ -36,7 +37,7 @@ function CreateCanvas() {
         }
         if (!sceneRef.current) {
             sceneRef.current = new BABYLON.Scene(engineRef.current);
-            const camera = new BABYLON.ArcRotateCamera("Camera", 1, Math.PI / 2, 7, BABYLON.Vector3.Zero(), sceneRef.current);
+            const camera = new BABYLON.ArcRotateCamera("Camera", 2, Math.PI / 2, 80, BABYLON.Vector3.Zero(), sceneRef.current);
             camera.attachControl(canvasRef.current, true);
             new BABYLON.HemisphericLight("light", new BABYLON.Vector3(0, 1, 0), sceneRef.current);
         }
@@ -138,24 +139,12 @@ function CreateCanvas() {
     }
 
     function createHumanoidModel(scene) {
-        // Define the model path
-        const modelPath = '././public/assets/LeftArm.glb';
-    
-        // Return a new promise
         return new Promise((resolve, reject) => {
-            // Use SceneLoader to import the mesh
-            BABYLON.SceneLoader.ImportMesh("", modelPath, "", scene, (newMeshes) => {
-                // Assuming the first mesh is the humanoid model you're interested in
-                const humanoid = newMeshes[0];
-                if (humanoid) {
-                    // Adjust position or any other properties as needed
-                    humanoid.position.y = 1;
-    
-                    // Resolve the promise with the loaded humanoid mesh
-                    resolve(humanoid);
+            BABYLON.SceneLoader.ImportMesh("", '../assets/', "LeftArm.glb", scene, (newMeshes) => {
+                if (newMeshes.length > 0) {
+                    resolve(newMeshes[0]); // Resolve with the first mesh
                 } else {
-                    // If no meshes were loaded, reject the promise
-                    reject(new Error("Failed to load the humanoid model"));
+                    reject("No meshes were loaded");
                 }
             });
         });
