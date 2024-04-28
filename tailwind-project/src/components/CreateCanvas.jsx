@@ -107,47 +107,58 @@ function CreateCanvas() {
             window.removeEventListener("pointerup", onPointerUp);
         };
     }, [tattooTextures]);
+
     function applyTattoosToModel(mesh, textures) {
-        if (!sceneRef.current || textures.length === 0) return;
-        
-        textures.forEach((textureURL, index) => {
-            const scene = sceneRef.current;
-            const dynamicTexture = new BABYLON.DynamicTexture(`dynamicTattoo${index}`, 512, scene, false);
-            dynamicTexture.hasAlpha = true;
-            const context = dynamicTexture.getContext();
+    if (!sceneRef.current || textures.length === 0) return;
+    
+    textures.forEach((textureURL, index) => {
+        const scene = sceneRef.current;
+        const dynamicTexture = new BABYLON.DynamicTexture(`dynamicTattoo${index}`, 512, scene, false);
+        dynamicTexture.hasAlpha = true;
+        const context = dynamicTexture.getContext();
 
-            const image = new Image();
-            image.onload = () => {
-                context.drawImage(image, 0, 0, 512, 512);
-                dynamicTexture.update();
-            };
-            image.src = textureURL;
+        const image = new Image();
+        image.onload = () => {
+            context.drawImage(image, 0, 0, 512, 512);
+            dynamicTexture.update();
+            console.log(`Texture applied: ${textureURL}`); // Add logging to confirm texture application
+        };
+        image.onerror = () => {
+            console.error(`Failed to load image: ${textureURL}`); // Error handling for image loading
+        };
+        image.src = textureURL;
 
-            const decalMaterial = new BABYLON.StandardMaterial(`decalMat${index}`, scene);
-            decalMaterial.diffuseTexture = dynamicTexture;
-            decalMaterial.zOffset = -2;
+        const decalMaterial = new BABYLON.StandardMaterial(`decalMat${index}`, scene);
+        decalMaterial.diffuseTexture = dynamicTexture;
+        decalMaterial.zOffset = -2;
 
-            const decalSize = new BABYLON.Vector3(1, 1, 1); // Adjust size as needed
-            const decal = BABYLON.MeshBuilder.CreateDecal("decal" + index, mesh, {
-                position: new BABYLON.Vector3(0, 0, 0.1 * index),
-                normal: new BABYLON.Vector3(0, 0, 1),
-                size: decalSize,
-                angle: 0
-            });
-            decal.material = decalMaterial;
+        const decalSize = new BABYLON.Vector3(10, 10, 10); // Adjust size as needed
+        const decal = BABYLON.MeshBuilder.CreateDecal("decal" + index, mesh, {
+            position: new BABYLON.Vector3(0, 0, 0.1 * index),
+            normal: new BABYLON.Vector3(0, 0, 1),
+            size: decalSize,
+            angle: 0
         });
-    }
+        decal.material = decalMaterial;
+    });
+}
 
     function createHumanoidModel(scene) {
-        return new Promise((resolve, reject) => {
-            BABYLON.SceneLoader.ImportMesh("", '../assets/', "LeftArm.glb", scene, (newMeshes) => {
-                if (newMeshes.length > 0) {
-                    resolve(newMeshes[0]); // Resolve with the first mesh
-                } else {
-                    reject("No meshes were loaded");
-                }
-            });
-        });
+
+        const body = BABYLON.MeshBuilder.CreateBox("body", { height: 3, width: 2, depth: 1 }, scene);
+        body.position.y = 1;
+        return body;
+
+        
+        // return new Promise((resolve, reject) => {
+        //     BABYLON.SceneLoader.ImportMesh("", 'assets/', "RightArm.glb", scene, (newMeshes) => {
+        //         if (newMeshes.length > 0) {
+        //             resolve(newMeshes[0]); // Resolve with the first mesh
+        //         } else {
+        //             reject("No meshes were loaded");
+        //         }
+        //     });
+        // });
     }
 
     return (
