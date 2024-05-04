@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import * as BABYLON from '@babylonjs/core';
 import TopNavigation from './TopNavigation';
 import '@babylonjs/loaders/glTF';
+import '@babylonjs/loaders/OBJ/objFileLoader'
 import PreviewImages from './PreviewImages';
 
 
@@ -12,6 +13,7 @@ function CreateCanvas() {
     const sceneRef = useRef(null);
     const [imageLoaded, setImageLoaded] = useState(false);
     const pickedDecalRef = useRef(null);
+
 
     function handleFileUpload(event) {
         const files = event.target.files;
@@ -130,7 +132,7 @@ function CreateCanvas() {
 
         const decalMaterial = new BABYLON.StandardMaterial(`decalMat${index}`, scene);
         decalMaterial.diffuseTexture = dynamicTexture;
-        decalMaterial.zOffset = -2;
+        // decalMaterial.zOffset = -2;
 
         const decalSize = new BABYLON.Vector3(10, 10, 10); // Adjust size as needed
         const decal = BABYLON.MeshBuilder.CreateDecal("decal" + index, mesh, {
@@ -145,21 +147,21 @@ function CreateCanvas() {
 
     function createHumanoidModel(scene) {
 
-        const body = BABYLON.MeshBuilder.CreateBox("body", { height: 3, width: 2, depth: 1 }, scene);
-        body.position.y = 1;
-        return body;
-
-        
-        // return new Promise((resolve, reject) => {
-        //     BABYLON.SceneLoader.ImportMesh("", 'assets/', "RightArm.glb", scene, (newMeshes) => {
-        //         if (newMeshes.length > 0) {
-        //             resolve(newMeshes[0]); // Resolve with the first mesh
-        //         } else {
-        //             reject("No meshes were loaded");
-        //         }
-        //     });
-        // });
+        // const body = BABYLON.MeshBuilder.CreateBox("body", { height: 3, width: 2, depth: 1 }, scene);
+        // body.position.y = 1;
+        // return body;
+    
+        return new Promise((resolve, reject) => {
+            BABYLON.SceneLoader.ImportMesh("", 'assets/', "Arm_Right_Vertical.obj", scene, (newMeshes) => {
+                if (newMeshes.length > 0) {
+                    resolve(newMeshes[0]); // Resolve with the first mesh
+                } else {
+                    reject("No meshes were loaded");
+                }
+            });
+        });
     }
+
 
     return (
         <div className="flex h-screen">
