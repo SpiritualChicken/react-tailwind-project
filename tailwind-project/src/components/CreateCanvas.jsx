@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import * as BABYLON from '@babylonjs/core';
 import TopNavigation from './TopNavigation';
 import '@babylonjs/loaders/glTF';
-import '@babylonjs/loaders/OBJ/objFileLoader'
+import '@babylonjs/loaders/OBJ/objFileLoader';
 import PreviewImages from './PreviewImages';
 
 function CreateCanvas() {
@@ -10,7 +10,7 @@ function CreateCanvas() {
     const canvasRef = useRef(null);
     const engineRef = useRef(null);
     const sceneRef = useRef(null);
-    const [selectedDecal, setSelectedDecal] = useState(null);
+    const selectedDecalRef = useRef(null);
 
     function handleFileUpload(event) {
         const files = event.target.files;
@@ -29,7 +29,6 @@ function CreateCanvas() {
     useEffect(() => {
         if (!canvasRef.current) return;
 
-        // Initialize the engine and scene if they haven't been already
         if (!engineRef.current) {
             engineRef.current = new BABYLON.Engine(canvasRef.current, true);
         }
@@ -39,8 +38,7 @@ function CreateCanvas() {
             camera.attachControl(canvasRef.current, true);
             new BABYLON.HemisphericLight("light", new BABYLON.Vector3(0, 1, 0), sceneRef.current);
         }
-    
-        // Load the model and apply tattoos
+
         (async () => {
             try {
                 const humanoid = await createHumanoidModel(sceneRef.current);
@@ -56,49 +54,70 @@ function CreateCanvas() {
             }
         });
 
-        // Mouse events for decal interaction
         canvasRef.current.addEventListener('pointerdown', onPointerDown);
         canvasRef.current.addEventListener('pointermove', onPointerMove);
+        canvasRef.current.addEventListener('pointerup', onPointerUp);
 
         return () => {
             canvasRef.current.removeEventListener('pointerdown', onPointerDown);
             canvasRef.current.removeEventListener('pointermove', onPointerMove);
+            canvasRef.current.removeEventListener('pointerup', onPointerUp);
         };
-
     }, [tattooTextures]);
 
-    // Handling mouse events for decal selection
     const onPointerDown = (evt) => {
         if (evt.button !== 0) return; // Only proceed for left click
         let pickInfo = sceneRef.current.pick(sceneRef.current.pointerX, sceneRef.current.pointerY);
         if (pickInfo.hit && pickInfo.pickedMesh.name.includes("decal")) {
-            setSelectedDecal(pickInfo.pickedMesh);
+            selectedDecalRef.current = pickInfo.pickedMesh;
             sceneRef.current.activeCamera.detachControl(canvasRef.current);
-        } else {
-            setSelectedDecal(null); // Clear selection if clicking outside of a decal
         }
     };
 
-    // Drag and Drop
     const onPointerMove = (evt) => {
-        if (selectedDecal) {
+        if (selectedDecalRef.current) {
             let pickInfo = sceneRef.current.pick(sceneRef.current.pointerX, sceneRef.current.pointerY);
             if (pickInfo.hit) {
                 // Calculate the correct position on the model's surface
-                let normal = pickInfo.getNormal(true, true);
                 let position = pickInfo.pickedPoint;
-
-                if (position && normal) {
-                    selectedDecal.position = position;
-                    selectedDecal.setDirection(normal.scale(-1)); // Orient the decal correctly based on the surface normal
+    
+                if (position) {
+                    // Update the decal's position
+                    selectedDecalRef.current.position = position;
+    
+                    // Adjust texture position based on decal's position
+                    updateTexturePosition(selectedDecalRef.current, pickInfo.getNormal(true));
                 }
             }
         }
     };
+    
+    function updateTexturePosition(decal, normal) {
+        // Get the associated material and dynamic texture
+        const material = decal.material;
+        const dynamicTexture = material.diffuseTexture;
+    
+        // Calculate the texture coordinates based on the decal's position and orientation
+        const uOffset = decal.position.x / 512; // Normalize position to texture coordinates
+        const vOffset = decal.position.y / 512; // Normalize position to texture coordinates
+    
+        // Update the dynamic texture's position
+        dynamicTexture.uOffset = uOffset;
+        dynamicTexture.vOffset = vOffset;
+    
+        // Adjust texture rotation based on the surface normal of the model at the decal's position
+        const uRotation = Math.atan2(normal.y, normal.x);
+        dynamicTexture.uAng = uRotation;
+    }
+
+    const onPointerUp = () => {
+        selectedDecalRef.current = null;
+        sceneRef.current.activeCamera.attachControl(canvasRef.current);
+    };
 
     function applyTattoosToModel(mesh, textures) {
         if (!sceneRef.current || textures.length === 0) return;
-        
+
         textures.forEach((textureURL, index) => {
             const scene = sceneRef.current;
             const dynamicTexture = new BABYLON.DynamicTexture(`dynamicTattoo${index}`, 512, scene, false);
