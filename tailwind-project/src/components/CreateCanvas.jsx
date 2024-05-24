@@ -1,24 +1,26 @@
 import React, { useState, useEffect, useRef } from 'react';
 import * as BABYLON from '@babylonjs/core';
+import { AdvancedDynamicTexture } from '@babylonjs/gui';
 import TopNavigation from './TopNavigation';
 import '@babylonjs/loaders/glTF';
 import '@babylonjs/loaders/OBJ/objFileLoader';
 import PreviewImages from './PreviewImages';
 
-
 function CreateCanvas() {
     const [tattooTextures, setTattooTextures] = useState([]);
+    const [selectedImageIndex, setSelectedImageIndex] = useState(0);
+    const [imagePositions, setImagePositions] = useState([]);
     const canvasRef = useRef(null);
     const engineRef = useRef(null);
     const sceneRef = useRef(null);
-    const decalsRef = useRef([]);
-    const gizmoManagerRef = useRef(null);
+    const dynamicTextureRef = useRef(null);
 
     function handleFileUpload(event) {
         const files = event.target.files;
         if (files && files.length > 0) {
             const newTextures = Array.from(files).map(file => URL.createObjectURL(file));
             setTattooTextures([...tattooTextures, ...newTextures]);
+            setImagePositions([...imagePositions, ...newTextures.map(() => ({ x: 0, y: 0 }))]);
         }
     }
 
@@ -26,6 +28,10 @@ function CreateCanvas() {
         const updatedTextures = [...tattooTextures];
         updatedTextures.splice(index, 1);
         setTattooTextures(updatedTextures);
+
+        const updatedPositions = [...imagePositions];
+        updatedPositions.splice(index, 1);
+        setImagePositions(updatedPositions);
     }
 
     useEffect(() => {
@@ -41,14 +47,13 @@ function CreateCanvas() {
                 camera.attachControl(canvasRef.current, true);
                 new BABYLON.HemisphericLight("light", new BABYLON.Vector3(0, 1, 0), sceneRef.current);
 
-                gizmoManagerRef.current = new BABYLON.GizmoManager(sceneRef.current);
-                gizmoManagerRef.current.boundingBoxGizmoEnabled = true;
-                gizmoManagerRef.current.usePointerToAttachGizmos = false;
+                dynamicTextureRef.current = new BABYLON.DynamicTexture("dynamicTexture", { width: 1024, height: 1024 }, sceneRef.current);
+                dynamicTextureRef.current.hasAlpha = true; // Enable alpha
             }
 
             try {
                 const humanoid = await createHumanoidModel(sceneRef.current);
-                applyTattoosToModel(humanoid, tattooTextures);
+                applyTattoosToModel(humanoid, tattooTextures, imagePositions);
             } catch (error) {
                 console.error("Error loading humanoid model:", error);
             }
@@ -76,44 +81,30 @@ function CreateCanvas() {
         };
 
         initializeBabylon();
-    }, [tattooTextures]);
+    }, [tattooTextures, imagePositions]);
 
-    function applyTattoosToModel(mesh, textures) {
+    function applyTattoosToModel(mesh, textures, positions) {
         if (!sceneRef.current || textures.length === 0) return;
 
-        textures.forEach((textureURL, index) => {
-            const scene = sceneRef.current;
-            const dynamicTexture = new BABYLON.DynamicTexture(`dynamicTattoo${index}`, 512, scene, false);
-            dynamicTexture.hasAlpha = true;
-            const context = dynamicTexture.getContext();
+        const context = dynamicTextureRef.current.getContext();
+        context.clearRect(0, 0, 1024, 1024);
 
+        textures.forEach((textureURL, index) => {
             const image = new Image();
             image.onload = () => {
-                context.drawImage(image, 0, 0, 250, 250);
-                dynamicTexture.update();
+                const { x, y } = positions[index];
+                context.clearRect(x, y, 256, 256); // Clear the area where the image will be drawn
+                context.drawImage(image, x, y, 256, 256); // Adjust size as needed
+                dynamicTextureRef.current.update();
             };
             image.src = textureURL;
-
-            const decalMaterial = new BABYLON.StandardMaterial(`decalMat${index}`, scene);
-            decalMaterial.diffuseTexture = dynamicTexture;
-
-            const decalSize = new BABYLON.Vector3(10, 10, 10); // Adjust size as needed
-            const decal = BABYLON.MeshBuilder.CreateDecal("decal" + index, mesh, {
-                position: new BABYLON.Vector3(0, 0, 0.1 * index),
-                normal: new BABYLON.Vector3(0, 0, 1),
-                size: decalSize,
-                angle: 0
-            });
-            decal.material = decalMaterial;
-            decal.isPickable = true; // Ensure the decal is pickable
-
-            decalsRef.current.push(decal);
-
-            decal.actionManager = new BABYLON.ActionManager(scene);
-            decal.actionManager.registerAction(new BABYLON.ExecuteCodeAction(BABYLON.ActionManager.OnPickTrigger, (evt) => {
-                gizmoManagerRef.current.attachToMesh(decal);
-            }));
         });
+
+        const material = new BABYLON.StandardMaterial("material", sceneRef.current);
+        material.diffuseTexture = dynamicTextureRef.current;
+        material.backFaceCulling = false;
+        material.alpha = 1.0;
+        mesh.material = material;
     }
 
     function createHumanoidModel(scene) {
@@ -127,6 +118,13 @@ function CreateCanvas() {
             });
         });
     }
+
+    const handleSliderChange = (axis, value) => {
+        const updatedPositions = [...imagePositions];
+        updatedPositions[selectedImageIndex][axis] = value;
+        setImagePositions(updatedPositions);
+        applyTattoosToModel(sceneRef.current.meshes[0], tattooTextures, updatedPositions); // Update the model with new positions
+    };
 
     return (
         <div className="flex h-screen">
@@ -142,9 +140,32 @@ function CreateCanvas() {
                             <h1>Layers</h1>
                             <PreviewImages images={tattooTextures} onDelete={handleDelete} />
                         </div>
+                        <div className='canvas-side-elements'>
+                            <h2>Adjust Image Position</h2>
+                            <div>
+                                <label>X Position:</label>
+                                <input 
+                                    type="range" 
+                                    min="-512" 
+                                    max="512" 
+                                    value={imagePositions[selectedImageIndex]?.x || 0} 
+                                    onChange={(e) => handleSliderChange('x', parseInt(e.target.value))} 
+                                />
+                            </div>
+                            <div>
+                                <label>Y Position:</label>
+                                <input 
+                                    type="range" 
+                                    min="-512" 
+                                    max="512" 
+                                    value={imagePositions[selectedImageIndex]?.y || 0} 
+                                    onChange={(e) => handleSliderChange('y', parseInt(e.target.value))} 
+                                />
+                            </div>
+                        </div>
                     </div>
                     <div className="md:col-span-2 flex flex-col">
-                        <canvas ref={canvasRef} id="renderCanvas" className='rounded-md' style={{ width: '100%', height: '100%' }}></canvas>
+                        <canvas ref={canvasRef} id="renderCanvas" className='rounded-md' style={{ width: '100%', height: '100%', backgroundColor: 'transparent' }}></canvas>
                     </div>
                 </div>
             </div>
@@ -153,3 +174,5 @@ function CreateCanvas() {
 }
 
 export default CreateCanvas;
+
+
