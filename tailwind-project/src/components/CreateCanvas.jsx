@@ -5,6 +5,7 @@ import TopNavigation from './TopNavigation';
 import '@babylonjs/loaders/glTF';
 import '@babylonjs/loaders/OBJ/objFileLoader';
 import PreviewImages from './PreviewImages';
+import { debounce } from 'lodash'; // Import debounce from lodash
 
 function CreateCanvas() {
     const [tattooTextures, setTattooTextures] = useState([]);
@@ -83,7 +84,7 @@ function CreateCanvas() {
         initializeBabylon();
     }, [tattooTextures, imagePositions]);
 
-    function applyTattoosToModel(mesh, textures, positions) {
+    const applyTattoosToModel = debounce((mesh, textures, positions) => {
         if (!sceneRef.current || textures.length === 0) return;
 
         const context = dynamicTextureRef.current.getContext();
@@ -105,7 +106,7 @@ function CreateCanvas() {
         material.backFaceCulling = false;
         material.alpha = 1.0;
         mesh.material = material;
-    }
+    }, 200); // Debounce with a 200ms delay
 
     function createHumanoidModel(scene) {
         return new Promise((resolve, reject) => {
@@ -174,5 +175,3 @@ function CreateCanvas() {
 }
 
 export default CreateCanvas;
-
-
