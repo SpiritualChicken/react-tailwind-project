@@ -1,11 +1,9 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import * as BABYLON from '@babylonjs/core';
-import { AdvancedDynamicTexture } from '@babylonjs/gui';
-import TopNavigation from './TopNavigation';
 import '@babylonjs/loaders/glTF';
 import '@babylonjs/loaders/OBJ/objFileLoader';
+import TopNavigation from './TopNavigation';
 import PreviewImages from './PreviewImages';
-import { debounce } from 'lodash'; // Import debounce from lodash
 
 function CreateCanvas() {
     const [tattooTextures, setTattooTextures] = useState([]);
@@ -15,25 +13,21 @@ function CreateCanvas() {
     const engineRef = useRef(null);
     const sceneRef = useRef(null);
     const dynamicTextureRef = useRef(null);
+    const humanoidRef = useRef(null);
 
-    function handleFileUpload(event) {
+    const handleFileUpload = useCallback((event) => {
         const files = event.target.files;
         if (files && files.length > 0) {
             const newTextures = Array.from(files).map(file => URL.createObjectURL(file));
-            setTattooTextures([...tattooTextures, ...newTextures]);
-            setImagePositions([...imagePositions, ...newTextures.map(() => ({ x: 0, y: 0 }))]);
+            setTattooTextures(prevTextures => [...prevTextures, ...newTextures]);
+            setImagePositions(prevPositions => [...prevPositions, ...newTextures.map(() => ({ x: 0, y: 0 }))]);
         }
-    }
+    }, []);
 
-    function handleDelete(index) {
-        const updatedTextures = [...tattooTextures];
-        updatedTextures.splice(index, 1);
-        setTattooTextures(updatedTextures);
-
-        const updatedPositions = [...imagePositions];
-        updatedPositions.splice(index, 1);
-        setImagePositions(updatedPositions);
-    }
+    const handleDelete = useCallback((index) => {
+        setTattooTextures(prevTextures => prevTextures.filter((_, i) => i !== index));
+        setImagePositions(prevPositions => prevPositions.filter((_, i) => i !== index));
+    }, []);
 
     useEffect(() => {
         if (!canvasRef.current) return;
@@ -52,11 +46,12 @@ function CreateCanvas() {
                 dynamicTextureRef.current.hasAlpha = true; // Enable alpha
             }
 
-            try {
-                const humanoid = await createHumanoidModel(sceneRef.current);
-                applyTattoosToModel(humanoid, tattooTextures, imagePositions);
-            } catch (error) {
-                console.error("Error loading humanoid model:", error);
+            if (!humanoidRef.current) {
+                try {
+                    humanoidRef.current = await createHumanoidModel(sceneRef.current);
+                } catch (error) {
+                    console.error("Error loading humanoid model:", error);
+                }
             }
 
             engineRef.current.runRenderLoop(() => {
@@ -82,9 +77,15 @@ function CreateCanvas() {
         };
 
         initializeBabylon();
+    }, []);
+
+    useEffect(() => {
+        if (humanoidRef.current) {
+            applyTattoosToModel(humanoidRef.current, tattooTextures, imagePositions);
+        }
     }, [tattooTextures, imagePositions]);
 
-    const applyTattoosToModel = debounce((mesh, textures, positions) => {
+    const applyTattoosToModel = useCallback((mesh, textures, positions) => {
         if (!sceneRef.current || textures.length === 0) return;
 
         const context = dynamicTextureRef.current.getContext();
@@ -106,9 +107,9 @@ function CreateCanvas() {
         material.backFaceCulling = false;
         material.alpha = 1.0;
         mesh.material = material;
-    }, 200); // Debounce with a 200ms delay
+    }, []);
 
-    function createHumanoidModel(scene) {
+    const createHumanoidModel = useCallback((scene) => {
         return new Promise((resolve, reject) => {
             BABYLON.SceneLoader.ImportMesh("", 'assets/', "Arm_Right_Vertical.obj", scene, (newMeshes) => {
                 if (newMeshes.length > 0) {
@@ -118,14 +119,15 @@ function CreateCanvas() {
                 }
             });
         });
-    }
+    }, []);
 
-    const handleSliderChange = (axis, value) => {
-        const updatedPositions = [...imagePositions];
-        updatedPositions[selectedImageIndex][axis] = value;
-        setImagePositions(updatedPositions);
-        applyTattoosToModel(sceneRef.current.meshes[0], tattooTextures, updatedPositions); // Update the model with new positions
-    };
+    const handleSliderChange = useCallback((axis, value) => {
+        setImagePositions(prevPositions => {
+            const updatedPositions = [...prevPositions];
+            updatedPositions[selectedImageIndex][axis] = value;
+            return updatedPositions;
+        });
+    }, [selectedImageIndex]);
 
     return (
         <div className="flex h-screen">
