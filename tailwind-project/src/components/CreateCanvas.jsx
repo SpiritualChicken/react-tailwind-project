@@ -9,6 +9,8 @@ function CreateCanvas() {
     const [tattooTextures, setTattooTextures] = useState([]);
     const [selectedImageIndex, setSelectedImageIndex] = useState(0);
     const [imagePositions, setImagePositions] = useState([]);
+    const [imageRotations, setImageRotations] = useState([]);
+    const [imageScales, setImageScales] = useState([]);
     const canvasRef = useRef(null);
     const engineRef = useRef(null);
     const sceneRef = useRef(null);
@@ -20,13 +22,21 @@ function CreateCanvas() {
         if (files && files.length > 0) {
             const newTextures = Array.from(files).map(file => URL.createObjectURL(file));
             setTattooTextures(prevTextures => [...prevTextures, ...newTextures]);
-            setImagePositions(prevPositions => [...prevPositions, ...newTextures.map(() => ({ x: 0, y: 0 }))]);
+            setImagePositions(prevPositions => [...prevPositions, ...newTextures.map(() => ({ x: 300, y: 500 }))]);
+            setImageRotations(prevRotations => [...prevRotations, ...newTextures.map(() => 0)]);
+            setImageScales(prevScales => [...prevScales, ...newTextures.map(() => 1)]);
         }
     }, []);
 
     const handleDelete = useCallback((index) => {
         setTattooTextures(prevTextures => prevTextures.filter((_, i) => i !== index));
         setImagePositions(prevPositions => prevPositions.filter((_, i) => i !== index));
+        setImageRotations(prevRotations => prevRotations.filter((_, i) => i !== index));
+        setImageScales(prevScales => prevScales.filter((_, i) => i !== index));
+    }, []);
+
+    const handleSelect = useCallback((index) => {
+        setSelectedImageIndex(index);
     }, []);
 
     useEffect(() => {
@@ -81,11 +91,11 @@ function CreateCanvas() {
 
     useEffect(() => {
         if (humanoidRef.current) {
-            applyTattoosToModel(humanoidRef.current, tattooTextures, imagePositions);
+            applyTattoosToModel(humanoidRef.current, tattooTextures, imagePositions, imageRotations, imageScales);
         }
-    }, [tattooTextures, imagePositions]);
+    }, [tattooTextures, imagePositions, imageRotations, imageScales]);
 
-    const applyTattoosToModel = useCallback((mesh, textures, positions) => {
+    const applyTattoosToModel = useCallback((mesh, textures, positions, rotations, scales) => {
         if (!sceneRef.current || textures.length === 0) return;
 
         const context = dynamicTextureRef.current.getContext();
@@ -95,8 +105,14 @@ function CreateCanvas() {
             const image = new Image();
             image.onload = () => {
                 const { x, y } = positions[index];
-                context.clearRect(x, y, 256, 256); // Clear the area where the image will be drawn
-                context.drawImage(image, x, y, 256, 256); // Adjust size as needed
+                const rotation = rotations[index];
+                const scale = scales[index];
+                context.save();
+                context.translate(x + 128, y + 128); // Center the image
+                context.rotate((rotation * Math.PI) / 180);
+                context.scale(scale, scale);
+                context.drawImage(image, -128, -128, 256, 256); // Adjust size as needed
+                context.restore();
                 dynamicTextureRef.current.update();
             };
             image.src = textureURL;
@@ -121,13 +137,29 @@ function CreateCanvas() {
         });
     }, []);
 
-    const handleSliderChange = useCallback((axis, value) => {
+    const handleSliderChange = useCallback((index, axis, value) => {
         setImagePositions(prevPositions => {
             const updatedPositions = [...prevPositions];
-            updatedPositions[selectedImageIndex][axis] = value;
+            updatedPositions[index][axis] = value;
             return updatedPositions;
         });
-    }, [selectedImageIndex]);
+    }, []);
+
+    const handleRotationChange = useCallback((index, value) => {
+        setImageRotations(prevRotations => {
+            const updatedRotations = [...prevRotations];
+            updatedRotations[index] = value;
+            return updatedRotations;
+        });
+    }, []);
+
+    const handleScaleChange = useCallback((index, value) => {
+        setImageScales(prevScales => {
+            const updatedScales = [...prevScales];
+            updatedScales[index] = value;
+            return updatedScales;
+        });
+    }, []);
 
     return (
         <div className="flex h-screen">
@@ -141,7 +173,7 @@ function CreateCanvas() {
                         </div>
                         <div className='canvas-side-elements'>
                             <h1>Layers</h1>
-                            <PreviewImages images={tattooTextures} onDelete={handleDelete} />
+                            <PreviewImages images={tattooTextures} onDelete={handleDelete} onSelect={handleSelect} />
                         </div>
                         <div className='canvas-side-elements'>
                             <h2>Adjust Image Position</h2>
@@ -149,20 +181,41 @@ function CreateCanvas() {
                                 <label>X Position:</label>
                                 <input 
                                     type="range" 
-                                    min="-512" 
-                                    max="512" 
+                                    min="-1000" 
+                                    max="1000" 
                                     value={imagePositions[selectedImageIndex]?.x || 0} 
-                                    onChange={(e) => handleSliderChange('x', parseInt(e.target.value))} 
+                                    onChange={(e) => handleSliderChange(selectedImageIndex, 'x', parseInt(e.target.value))} 
                                 />
                             </div>
                             <div>
                                 <label>Y Position:</label>
                                 <input 
                                     type="range" 
-                                    min="-512" 
-                                    max="512" 
+                                    min="-1000" 
+                                    max="1000" 
                                     value={imagePositions[selectedImageIndex]?.y || 0} 
-                                    onChange={(e) => handleSliderChange('y', parseInt(e.target.value))} 
+                                    onChange={(e) => handleSliderChange(selectedImageIndex, 'y', parseInt(e.target.value))} 
+                                />
+                            </div>
+                            <div>
+                                <label>Rotate:</label>
+                                <input 
+                                    type="range" 
+                                    min="0" 
+                                    max="360" 
+                                    value={imageRotations[selectedImageIndex] || 0} 
+                                    onChange={(e) => handleRotationChange(selectedImageIndex, parseInt(e.target.value))} 
+                                />
+                            </div>
+                            <div>
+                                <label>Scale:</label>
+                                <input 
+                                    type="range" 
+                                    min="0.1" 
+                                    max="5" 
+                                    step="0.1" 
+                                    value={imageScales[selectedImageIndex] || 1} 
+                                    onChange={(e) => handleScaleChange(selectedImageIndex, parseFloat(e.target.value))} 
                                 />
                             </div>
                         </div>
