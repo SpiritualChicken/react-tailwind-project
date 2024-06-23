@@ -163,23 +163,23 @@ function CreateCanvas() {
     }, []);
 
     return (
-        <div className="flex h-screen">
+        <div className="flex h-screen content-container">
             <div className="flex flex-col flex-1">
                 <TopNavigation />
                 <div className="grid grid-cols-1 xl:grid-cols-3 md:grid-cols-3 gap-4 p-4 pl-20 h-full">
                     <div className="md:block md:col-span-1 h-full flex flex-col">
-                        <div className='border rounded-lg border-dashed border-black text-center mb-4 bg-slate-100 '>
-                            <label className='w-5 h-3 text-center border-r-1 border-dashed'>
+                        <div className='border rounded-lg border border-black text-center mb-4 bg-slate-100'>
+                            <label className='w-5 h-3 text-center border-r-1 cursor-pointer'>
                                 <input type="file" accept='image/*' className='pt-2' onChange={handleFileUpload} multiple hidden />
-                                <div className='w-full h-full rounded-md border-dashed border-black items-center p-5'>
+                                <div className='w-full h-full rounded-md borderitems-center p-5'>
                                     <FaCloudUploadAlt size={70} className='upload-icon item w-full mt-3' />
                                     <p className='mt-2'>Drag and drop or Click here <br/> to upload an image</p> 
                                     <span className="block text-sm mt-2 text-slate-600">Upload any image from desktop</span>
                                 </div>
                             </label>
                         </div>
-                        <div className='canvas-side-elements mb-4'>
-                            <h2>Control Panel</h2>
+                        <div className='canvas-side-elements mb-4  bg-slate-100'>
+                            <h2 className='underline mb-2'>Control Panel</h2>
                             <div>
                                 <label>X Position:</label>
                                 <input 
@@ -188,6 +188,7 @@ function CreateCanvas() {
                                     max="1000" 
                                     value={imagePositions[selectedImageIndex]?.x || 0} 
                                     onChange={(e) => handleSliderChange(selectedImageIndex, 'x', parseInt(e.target.value))} 
+                                    className='slider'
                                 />
                             </div>
                             <div>
@@ -198,6 +199,7 @@ function CreateCanvas() {
                                     max="1000" 
                                     value={imagePositions[selectedImageIndex]?.y || 0} 
                                     onChange={(e) => handleSliderChange(selectedImageIndex, 'y', parseInt(e.target.value))} 
+                                    className='slider'
                                 />
                             </div>
                             <div>
@@ -208,6 +210,7 @@ function CreateCanvas() {
                                     max="360" 
                                     value={imageRotations[selectedImageIndex] || 0} 
                                     onChange={(e) => handleRotationChange(selectedImageIndex, parseInt(e.target.value))} 
+                                    className='slider'
                                 />
                             </div>
                             <div>
@@ -219,12 +222,13 @@ function CreateCanvas() {
                                     step="0.1" 
                                     value={imageScales[selectedImageIndex] || 1} 
                                     onChange={(e) => handleScaleChange(selectedImageIndex, parseFloat(e.target.value))} 
+                                    className='slider'
                                 />
                             </div>
                         </div>
-                        <div className='canvas-side-elements'>
-                            <h1>Layers</h1>
-                            <PreviewImages images={tattooTextures} onDelete={handleDelete} onSelect={handleSelect} />
+                        <div className='canvas-side-elements  bg-slate-100'>
+                            <h1 className='underline mb-2'>Layers</h1>
+                            <PreviewImages images={tattooTextures} onDelete={handleDelete} onSelect={handleSelect} selectedImageIndex={selectedImageIndex} />
                         </div>
                         
                     </div>
