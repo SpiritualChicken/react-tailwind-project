@@ -4,6 +4,7 @@ import '@babylonjs/loaders/glTF';
 import '@babylonjs/loaders/OBJ/objFileLoader';
 import TopNavigation from './TopNavigation';
 import PreviewImages from './PreviewImages';
+import { FaCloudUploadAlt } from "react-icons/fa";
 
 function CreateCanvas() {
     const [tattooTextures, setTattooTextures] = useState([]);
@@ -48,7 +49,7 @@ function CreateCanvas() {
             }
             if (!sceneRef.current) {
                 sceneRef.current = new BABYLON.Scene(engineRef.current);
-                const camera = new BABYLON.ArcRotateCamera("Camera", 2, Math.PI / 2, 80, BABYLON.Vector3.Zero(), sceneRef.current);
+                const camera = new BABYLON.ArcRotateCamera("Camera", 2, Math.PI / 2, 100, BABYLON.Vector3.Zero(), sceneRef.current);
                 camera.attachControl(canvasRef.current, true);
                 new BABYLON.HemisphericLight("light", new BABYLON.Vector3(0, 1, 0), sceneRef.current);
 
@@ -167,16 +168,18 @@ function CreateCanvas() {
                 <TopNavigation />
                 <div className="grid grid-cols-1 xl:grid-cols-3 md:grid-cols-3 gap-4 p-4 pl-20 h-full">
                     <div className="md:block md:col-span-1 h-full flex flex-col">
+                        <div className='border rounded-lg border-dashed border-black text-center mb-4 bg-slate-100 '>
+                            <label className='w-5 h-3 text-center border-r-1 border-dashed'>
+                                <input type="file" accept='image/*' className='pt-2' onChange={handleFileUpload} multiple hidden />
+                                <div className='w-full h-full rounded-md border-dashed border-black items-center p-5'>
+                                    <FaCloudUploadAlt size={70} className='upload-icon item w-full mt-3' />
+                                    <p className='mt-2'>Drag and drop or Click here <br/> to upload an image</p> 
+                                    <span className="block text-sm mt-2 text-slate-600">Upload any image from desktop</span>
+                                </div>
+                            </label>
+                        </div>
                         <div className='canvas-side-elements mb-4'>
-                            <h1>Upload</h1>
-                            <input type="file" className='pt-2' onChange={handleFileUpload} multiple />
-                        </div>
-                        <div className='canvas-side-elements'>
-                            <h1>Layers</h1>
-                            <PreviewImages images={tattooTextures} onDelete={handleDelete} onSelect={handleSelect} />
-                        </div>
-                        <div className='canvas-side-elements'>
-                            <h2>Adjust Image Position</h2>
+                            <h2>Control Panel</h2>
                             <div>
                                 <label>X Position:</label>
                                 <input 
@@ -219,6 +222,11 @@ function CreateCanvas() {
                                 />
                             </div>
                         </div>
+                        <div className='canvas-side-elements'>
+                            <h1>Layers</h1>
+                            <PreviewImages images={tattooTextures} onDelete={handleDelete} onSelect={handleSelect} />
+                        </div>
+                        
                     </div>
                     <div className="md:col-span-2 flex flex-col">
                         <canvas ref={canvasRef} id="renderCanvas" className='rounded-md' style={{ width: '100%', height: '100%', backgroundColor: 'transparent' }}></canvas>
