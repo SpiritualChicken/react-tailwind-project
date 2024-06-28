@@ -4,7 +4,16 @@ import '@babylonjs/loaders/glTF';
 import '@babylonjs/loaders/OBJ/objFileLoader';
 import TopNavigation from './TopNavigation';
 import PreviewImages from './PreviewImages';
-import { FaCloudUploadAlt } from "react-icons/fa";
+import { FaCloudUploadAlt, FaBookmark, FaShare } from "react-icons/fa";
+import { CiSaveDown1 } from "react-icons/ci";
+import { MdOutlineFileDownload } from "react-icons/md";
+
+const CanvasIcon = ({ icon, text }) => (
+    <div className="canvas-icons">
+        {icon}
+        {text && <span className="canvas-tooltip">{text}</span>}
+    </div>
+);
 
 function CreateCanvas() {
     const [tattooTextures, setTattooTextures] = useState([]);
@@ -166,19 +175,19 @@ function CreateCanvas() {
         <div className="flex h-screen content-container">
             <div className="flex flex-col flex-1">
                 <TopNavigation />
-                <div className="grid grid-cols-1 xl:grid-cols-3 md:grid-cols-3 gap-4 p-4 pl-20 h-full">
-                    <div className="md:block md:col-span-1 h-full flex flex-col">
-                        <div className='border rounded-lg border border-black text-center mb-4 bg-slate-100'>
+                <div className="grid grid-cols-1 xl:grid-cols-3 md:grid-cols-3 sm:grid-cols-3 gap-4 p-4 pl-20 h-full">
+                    <div className="md:block md:col-span-1 sm:block sm:col-span-1 h-full flex flex-col ">
+                        <div className='border rounded-lg border-black text-center mb-4 bg-slate-100'>
                             <label className='w-5 h-3 text-center border-r-1 cursor-pointer'>
                                 <input type="file" accept='image/*' className='pt-2' onChange={handleFileUpload} multiple hidden />
-                                <div className='w-full h-full rounded-md borderitems-center p-5'>
-                                    <FaCloudUploadAlt size={70} className='upload-icon item w-full mt-3' />
+                                <div className='w-full h-full rounded-md items-center p-5'>
+                                    <FaCloudUploadAlt size={70} className='upload-icon item w-full mt-2' />
                                     <p className='mt-2'>Drag and drop or Click here <br/> to upload an image</p> 
                                     <span className="block text-sm mt-2 text-slate-600">Upload any image from desktop</span>
                                 </div>
                             </label>
                         </div>
-                        <div className='canvas-side-elements mb-4  bg-slate-100'>
+                        <div className='canvas-side-elements mb-4 bg-slate-100'>
                             <h2 className='underline mb-2'>Control Panel</h2>
                             <div>
                                 <label>X Position:</label>
@@ -220,20 +229,31 @@ function CreateCanvas() {
                                     min="0.1" 
                                     max="5" 
                                     step="0.1" 
-                                    value={imageScales[selectedImageIndex] || 1} 
+                                    value={imageScales[selectedImageIndex] || 0} 
                                     onChange={(e) => handleScaleChange(selectedImageIndex, parseFloat(e.target.value))} 
                                     className='slider'
                                 />
                             </div>
                         </div>
-                        <div className='canvas-side-elements  bg-slate-100'>
+                        <div className='canvas-side-elements bg-slate-100 pb-4'>
                             <h1 className='underline mb-2'>Layers</h1>
-                            <PreviewImages images={tattooTextures} onDelete={handleDelete} onSelect={handleSelect} selectedImageIndex={selectedImageIndex} />
+                            <div className='flex flex-wrap'>
+                                <PreviewImages images={tattooTextures} onDelete={handleDelete} onSelect={handleSelect} selectedImageIndex={selectedImageIndex} />
+                            </div>
                         </div>
-                        
                     </div>
                     <div className="md:col-span-2 flex flex-col">
                         <canvas ref={canvasRef} id="renderCanvas" className='rounded-md' style={{ width: '100%', height: '100%', backgroundColor: 'transparent' }}></canvas>
+                        <div className='canvas-bottom-element flex mt-2'>
+                            <div className="flex">
+                                <CanvasIcon icon={<CiSaveDown1 />} text="Save" />
+                                <CanvasIcon icon={<FaBookmark />} text="Bookmark" />
+                                <CanvasIcon icon={<MdOutlineFileDownload />} text="Download" />
+                            </div>
+                            <div className='justify-end mr-4'>
+                                <CanvasIcon icon={<FaShare />} text="Share" />
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>

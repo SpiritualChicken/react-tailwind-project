@@ -6,15 +6,24 @@
   .sidebar-icon {
     @apply relative flex items-center justify-center 
     h-12 w-12 mt-2 mb-2 mx-auto  
-  bg-gray-400 hover:bg-rose-500 dark:bg-gray-700 
-  text-rose-400 hover:text-white
+    bg-gray-400 hover:bg-rose-500 dark:bg-gray-700 
+    text-rose-400 hover:text-white
     hover:rounded-xl rounded-3xl
     transition-all duration-300 ease-linear
-    cursor-pointer shadow-lg ;
+    cursor-pointer shadow-lg;
   }
-
+  
+  .canvas-icons {
+    @apply relative flex items-center justify-center 
+    h-8 w-8 mt-2 mb-2 mx-auto ml-3 
+    bg-gray-400 hover:bg-rose-500 dark:bg-gray-400 
+    text-rose-400 hover:text-white
+    hover:rounded-xl rounded-3xl
+    transition-all duration-300 ease-linear
+    cursor-pointer shadow-lg;
+  }
   .upload-icon {
-    @apply text-rose-500 
+    @apply text-rose-500;
   }
 
   .sidebar-tooltip {
@@ -23,13 +32,23 @@
     text-xs font-bold 
     transition-all duration-100 scale-0 origin-left;
   }
+  
+  .canvas-tooltip {
+    @apply absolute w-auto p-2 m-2 min-w-max bottom-10 rounded-md shadow-md
+    text-white bg-gray-900 
+    text-xs font-bold 
+    transition-all duration-100 scale-0 origin-bottom;
+  }
 
+  .canvas-icons:hover .canvas-tooltip {
+    @apply scale-100;
+  }
+  
   .sidebar-hr {
     @apply bg-gray-200 dark:bg-gray-800 
     border border-gray-200 dark:border-gray-800 rounded-full
     mx-2;
   }
-  
   .top-navigation {
     @apply flex flex-row items-center justify-evenly 
     bg-gray-300 dark:bg-gray-900 bg-opacity-90 
@@ -37,14 +56,11 @@
     m-0 
     shadow-lg;
   }
-
   .content-container-icons {
-    @apply
-    transition duration-300 ease-in-out 
+    @apply transition duration-300 ease-in-out 
     hover:text-rose-500 
     cursor-pointer;
   }
-
   .top-navigation-icon {
     @apply text-gray-500
     mr-3 ml-4
@@ -52,17 +68,13 @@
     hover:text-rose-500 
     cursor-pointer;
   }
-
-
   .top-navigation-icon:first {
     @apply ml-auto mr-4;
   }
-
   .title-hashtag {
     @apply text-lg tracking-wider font-semibold text-gray-500 
     ml-2 my-auto;
   }
-
   .title-text {
     @apply text-xl text-gray-500 tracking-wider font-semibold text-opacity-80 
     mr-auto ml-2 my-auto 
@@ -71,33 +83,36 @@
   .content-container {
     @apply flex-row bg-gray-300 dark:bg-gray-700 h-full w-full overflow-hidden;
   }
-
- .content-list {
-    @apply flex-row
-    h-full w-full 
-    mt-0 ml-16 mr-16 pb-12 
-  
+  .content-list {
+    @apply flex-row h-full w-full 
+    mt-0 ml-16 mr-16 pb-12;
   }
   .grid {
     @apply w-full;
   }
-
 }
 
 #my-canvas {
-  @apply w-full
-  h-full
-  p-2
-
+  @apply w-full h-full p-2;
 }
 
 .canvas-side-elements {
-  height: 35%;
-  @apply 
-  text-center 
-  rounded-lg 
-  border 
-  border-solid 
-  border-black  
+  height: 28.3%;
+  @apply text-center rounded-lg border border-solid border-black;
+}
 
+.canvas-bottom-element {
+  height: 10%;
+  @apply mt-2 bg-slate-100 text-center rounded-lg border flex justify-between w-full border-solid border-black;
+}
+
+.canvas-tooltip {
+  @apply absolute w-auto p-2 m-2 min-w-max bottom-8 rounded-md shadow-md
+  text-white bg-gray-900 
+  text-xs font-bold 
+  transition-all duration-100 scale-0 origin-bottom;
+}
+
+.canvas-icons:hover .canvas-tooltip {
+  @apply scale-100;
 }
