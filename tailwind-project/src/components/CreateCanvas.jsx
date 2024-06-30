@@ -8,8 +8,8 @@ import { FaCloudUploadAlt, FaBookmark, FaShare } from "react-icons/fa";
 import { CiSaveDown1 } from "react-icons/ci";
 import { MdOutlineFileDownload } from "react-icons/md";
 
-const CanvasIcon = ({ icon, text }) => (
-    <div className="canvas-icons">
+const CanvasIcon = ({ icon, text, onClick }) => (
+    <div className="canvas-icons" onClick={onClick}>
         {icon}
         {text && <span className="canvas-tooltip">{text}</span>}
     </div>
@@ -171,6 +171,29 @@ function CreateCanvas() {
         });
     }, []);
 
+    const saveCanvasAsImage = () => {
+        if (!canvasRef.current || !engineRef.current) return;
+        
+        // Make sure the scene has rendered before capturing the canvas
+        engineRef.current.stopRenderLoop();
+        sceneRef.current.render();
+
+        canvasRef.current.toBlob(blob => {
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(blob);
+            link.download = 'tattoo-design.png';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }, 'image/png');
+
+        engineRef.current.runRenderLoop(() => {
+            if (sceneRef.current) {
+                sceneRef.current.render();
+            }
+        });
+    };
+
     return (
         <div className="flex h-screen content-container">
             <div className="flex flex-col flex-1">
@@ -248,7 +271,7 @@ function CreateCanvas() {
                             <div className="flex">
                                 <CanvasIcon icon={<CiSaveDown1 />} text="Save" />
                                 <CanvasIcon icon={<FaBookmark />} text="Bookmark" />
-                                <CanvasIcon icon={<MdOutlineFileDownload />} text="Download" />
+                                <CanvasIcon icon={<MdOutlineFileDownload />} text="Download" onClick={saveCanvasAsImage} />
                             </div>
                             <div className='justify-end mr-4'>
                                 <CanvasIcon icon={<FaShare />} text="Share" />
