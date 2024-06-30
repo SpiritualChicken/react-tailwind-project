@@ -12,7 +12,7 @@
     transition-all duration-300 ease-linear
     cursor-pointer shadow-lg;
   }
-  
+
   .canvas-icons {
     @apply relative flex items-center justify-center 
     h-8 w-8 mt-2 mb-2 mx-auto ml-3 
@@ -22,6 +22,7 @@
     transition-all duration-300 ease-linear
     cursor-pointer shadow-lg;
   }
+  
   .upload-icon {
     @apply text-rose-500;
   }
@@ -49,18 +50,21 @@
     border border-gray-200 dark:border-gray-800 rounded-full
     mx-2;
   }
+
   .top-navigation {
-    @apply flex flex-row items-center justify-evenly 
+    @apply flex flex-row items-center justify-between 
     bg-gray-300 dark:bg-gray-900 bg-opacity-90 
     w-full h-16 
     m-0 
     shadow-lg;
   }
+
   .content-container-icons {
     @apply transition duration-300 ease-in-out 
     hover:text-rose-500 
     cursor-pointer;
   }
+
   .top-navigation-icon {
     @apply text-gray-500
     mr-3 ml-4
@@ -68,25 +72,27 @@
     hover:text-rose-500 
     cursor-pointer;
   }
-  .top-navigation-icon:first {
-    @apply ml-auto mr-4;
-  }
+
   .title-hashtag {
     @apply text-lg tracking-wider font-semibold text-gray-500 
     ml-2 my-auto;
   }
+
   .title-text {
     @apply text-xl text-gray-500 tracking-wider font-semibold text-opacity-80 
     mr-auto ml-2 my-auto 
     transition duration-300 ease-in-out;
   }
+
   .content-container {
-    @apply flex-row bg-gray-300 dark:bg-gray-700 h-full w-full overflow-hidden;
+    @apply flex flex-col lg:flex-row bg-gray-300 dark:bg-gray-700 h-full w-full overflow-hidden;
   }
+
   .content-list {
-    @apply flex-row h-full w-full 
-    mt-0 ml-16 mr-16 pb-12;
+    @apply flex flex-col lg:flex-row h-full w-full 
+    mt-0 ml-4 mr-4 pb-12;
   }
+
   .grid {
     @apply w-full;
   }
@@ -97,13 +103,11 @@
 }
 
 .canvas-side-elements {
-  height: 28.3%;
-  @apply text-center rounded-lg border border-solid border-black;
+  @apply text-center rounded-lg border border-solid border-black p-4 mb-4 h-1/3;
 }
 
 .canvas-bottom-element {
-  height: 10%;
-  @apply mt-2 bg-slate-100 text-center rounded-lg border flex justify-between w-full border-solid border-black;
+  @apply bg-slate-100 text-center rounded-lg border flex justify-between items-center w-full border-solid border-black;
 }
 
 .canvas-tooltip {
@@ -115,4 +119,10 @@
 
 .canvas-icons:hover .canvas-tooltip {
   @apply scale-100;
+}
+
+@media (min-width: 640px) {
+  .content-container {
+    @apply flex-row;
+  }
 }

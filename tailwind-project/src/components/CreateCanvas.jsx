@@ -235,9 +235,9 @@ function CreateCanvas() {
                                 />
                             </div>
                         </div>
-                        <div className='canvas-side-elements bg-slate-100 pb-4'>
+                        <div className='canvas-side-elements bg-slate-100 mb-4'>
                             <h1 className='underline mb-2'>Layers</h1>
-                            <div className='flex flex-wrap'>
+                            <div className='overflow-hidden'>
                                 <PreviewImages images={tattooTextures} onDelete={handleDelete} onSelect={handleSelect} selectedImageIndex={selectedImageIndex} />
                             </div>
                         </div>
